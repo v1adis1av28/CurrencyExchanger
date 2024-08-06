@@ -1,4 +1,4 @@
-package com.example.exchangecurrency;
+package com.example.Servlets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -36,8 +36,8 @@ public class HelloServlet extends HttpServlet {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT  *  FROM Currencies");
                 while (rs.next()) {
-                    out.println("<h1>" + rs.getInt("ID") + rs.getString("Code") +
-                            rs.getString("FullName") + rs.getString("Sign") + "</h1>");
+                    out.println("<h1>" + rs.getInt("ID") + " " + rs.getString("Code") +
+                             " " +  rs.getString("FullName") + " " + rs.getString("Sign")+ " "  + "</h1>");
                     out.println();
                 }
             } catch (SQLException e) {
