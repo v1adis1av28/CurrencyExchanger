@@ -33,8 +33,40 @@ public class CurrenciesService extends ServiceEntity{
             throw new RuntimeException(e);
         }
     }
-
+    public String ProcessPostCurrenciesRequest(Statement statement, String name, String code, String sign) {
+        try
+        {
+            Gson gson = new Gson();//Объект для передачи в json сервлета
+            int ID = GenerateID(statement);
+            String sql = "insert into currencies values ( " + ID + ", '" + code + "', '" +name  + "', '" + sign + "');";
+            statement.executeUpdate(sql);
+            DTO.Currency currency = new DTO.Currency();
+            currency.setID(ID);
+            currency.setCode(code);
+            currency.setFullName(name);
+            currency.setSign(sign);
+            return gson.toJson(currency);
+        } catch (SQLException e) {
+            return "409";// Ошибка при добавлении(Валюта с таким кодом уже существует)
+            //throw new RuntimeException(e);
+        }
+    }
     //TODOO нужно два метода
     // Метод который будет обрабатывать запрос для ДТО с POST запросом
     // Второй нужен для проверки валидности вставляемого id(который генерим)
+    private int GenerateID(Statement statement) throws SQLException {
+        Random rand = new Random();
+        while(true)
+        {
+            int randomID = rand.nextInt(1000);
+            String sql = "select * from currencies where ID="+randomID + ";";
+            ResultSet resultSet = statement.executeQuery(sql);
+            if(!resultSet.next())
+            {
+                return randomID;
+            }
+            else
+                continue;
+        }
+    }
 }

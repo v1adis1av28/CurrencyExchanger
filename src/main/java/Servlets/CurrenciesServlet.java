@@ -1,9 +1,6 @@
 package Servlets;
 
-import DTO.Currency;
 import Services.CurrenciesService;
-import Services.CurrenciesService;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,8 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @WebServlet(name = "Currencies", value = "/currencies")
 public class CurrenciesServlet extends BaseServlet {
@@ -45,7 +40,32 @@ public class CurrenciesServlet extends BaseServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
+        String name = request.getParameter("name");
+        String code = request.getParameter("code");
+        String sign = request.getParameter("sign");
 
+        if (name == null || code == null || sign == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"error\": \"Missing parameters\"}");
+            return;
+        }
+
+        try {
+            Connection connection = DriverManager.getConnection(BASE_URL);
+            Statement statement = connection.createStatement();
+            String gson = service.ProcessPostCurrenciesRequest(statement, name, code, sign);
+            if(gson.equals("409"))
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+            else
+            {
+                out.println(gson);
+                response.setStatus(201);
+                out.flush();
+            }
+        } catch (SQLException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print("{\"error\": \"" + e.getMessage() + "\"}");
+        }
     }
 }
 //
