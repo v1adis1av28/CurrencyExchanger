@@ -1,10 +1,12 @@
 package Servlets;
 
 import DTO.Currency;
+import Services.CurrenciesService;
+import Services.CurrenciesService;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -12,50 +14,38 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 @WebServlet(name = "Currencies", value = "/currencies")
-public class CurrenciesServlet extends HttpServlet {
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+public class CurrenciesServlet extends BaseServlet {
 
+    protected CurrenciesService service = new CurrenciesService();
+
+    //Метод Который получает GET запрос на получение всех валют из базы данных
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("utf-8");
-        PrintWriter out = resp.getWriter();
-        String sql = "select * from currencies";
-        ArrayList<Currency> currencies = new ArrayList<>();
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+        Connection connection = null;
         try {
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:C:/sqlite/CurrencyProject.db");
+            connection = DriverManager.getConnection(BASE_URL);
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-
-            while(resultSet.next()) {
-                Currency currency = new Currency();
-                currency.setID(resultSet.getInt("ID"));
-                currency.setCode(resultSet.getString("Code"));
-                currency.setFullName(resultSet.getString("FullName"));
-                currency.setSign(resultSet.getString("Sign"));
-                currencies.add(currency);
-            }
-            for (Currency currency : currencies) {
-                System.out.println(new Gson().toJson(currency));
-            }
+            JsonArray jsonArray = service.ProccessGetCurrenciesRequest(statement);
+            out.println(jsonArray);
+            response.setStatus(HttpServletResponse.SC_OK);
         } catch (SQLException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+
     }
 }
 //
