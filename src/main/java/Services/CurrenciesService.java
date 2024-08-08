@@ -48,12 +48,8 @@ public class CurrenciesService extends ServiceEntity{
             return gson.toJson(currency);
         } catch (SQLException e) {
             return gson.toJson(new Error("409"));// Ошибка при добавлении(Валюта с таким кодом уже существует)
-            //throw new RuntimeException(e);
         }
     }
-    //TODOO нужно два метода
-    // Метод который будет обрабатывать запрос для ДТО с POST запросом
-    // Второй нужен для проверки валидности вставляемого id(который генерим)
     private int GenerateID(Statement statement) throws SQLException {
         Random rand = new Random();
         while(true)
