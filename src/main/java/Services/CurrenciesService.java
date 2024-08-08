@@ -3,7 +3,7 @@ package Services;
 import DTO.Currency;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-
+import DTO.Error;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +34,9 @@ public class CurrenciesService extends ServiceEntity{
         }
     }
     public String ProcessPostCurrenciesRequest(Statement statement, String name, String code, String sign) {
+        Gson gson = new Gson();//Объект для передачи в json сервлета
         try
         {
-            Gson gson = new Gson();//Объект для передачи в json сервлета
             int ID = GenerateID(statement);
             String sql = "insert into currencies values ( " + ID + ", '" + code + "', '" +name  + "', '" + sign + "');";
             statement.executeUpdate(sql);
@@ -47,7 +47,7 @@ public class CurrenciesService extends ServiceEntity{
             currency.setSign(sign);
             return gson.toJson(currency);
         } catch (SQLException e) {
-            return "409";// Ошибка при добавлении(Валюта с таким кодом уже существует)
+            return gson.toJson(new Error("409"));// Ошибка при добавлении(Валюта с таким кодом уже существует)
             //throw new RuntimeException(e);
         }
     }

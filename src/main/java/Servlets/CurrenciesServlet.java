@@ -54,14 +54,12 @@ public class CurrenciesServlet extends BaseServlet {
             Connection connection = DriverManager.getConnection(BASE_URL);
             Statement statement = connection.createStatement();
             String gson = service.ProcessPostCurrenciesRequest(statement, name, code, sign);
-            if(gson.equals("409"))
-                response.setStatus(HttpServletResponse.SC_CONFLICT);
+            if(!gson.contains("error"))
+                response.setStatus(HttpServletResponse.SC_CREATED);
             else
-            {
-                out.println(gson);
-                response.setStatus(201);
-                out.flush();
-            }
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.println(gson);
+            out.flush();
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"" + e.getMessage() + "\"}");
