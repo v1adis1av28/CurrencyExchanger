@@ -64,7 +64,7 @@ public class ExchangeRatesService extends ServiceEntity{
             return 1;
     }
     //Здесь проверяем наличие самой id в базе данных, данные тянем из Currencies
-    boolean CheckId(Statement statement, int id) throws SQLException {
+    protected boolean CheckId(Statement statement, int id) throws SQLException {
         String sql = "select * from Currencies where ID=" + id + ";";
         try {
             ResultSet resultSet = statement.executeQuery(sql);
@@ -78,7 +78,7 @@ public class ExchangeRatesService extends ServiceEntity{
     }
 
     //Проверяем наличие пары, если прошла проверку на наличие валют
-    boolean CheckPair(Statement statement, int baseId, int targetId) throws SQLException {
+    protected boolean CheckPair(Statement statement, int baseId, int targetId) throws SQLException {
         String sql = "select * from ExchangeRates WHERE BaseCurrencyId=" + baseId + " AND TargetCurrency=" + targetId + ";";
         try (ResultSet resultSet = statement.executeQuery(sql)) {
             if (resultSet.next()) {

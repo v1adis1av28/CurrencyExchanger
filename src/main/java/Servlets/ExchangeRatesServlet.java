@@ -63,7 +63,7 @@ public class ExchangeRatesServlet extends BaseServlet{
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw new RuntimeException(e);
         }
-
-
     }
+
+
 }
