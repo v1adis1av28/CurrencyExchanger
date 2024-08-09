@@ -3,7 +3,6 @@ package Servlets;
 import Services.CurrencyService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -15,7 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @WebServlet (name="currency", value="/currency/*")
-public class Currency extends BaseServlet {
+public class CurrencyServlet extends BaseServlet {
 
     private CurrencyService currencyService = new CurrencyService();
 

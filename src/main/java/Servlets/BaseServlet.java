@@ -23,7 +23,6 @@ public class BaseServlet extends HttpServlet {
             e.printStackTrace();
         }
     }
-
     @Override
     public void destroy() {
         super.destroy();
