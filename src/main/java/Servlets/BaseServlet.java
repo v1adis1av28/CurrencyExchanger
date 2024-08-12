@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 public class BaseServlet extends HttpServlet {
-    protected String BASE_URL = "jdbc:sqlite:C:/sqlite/CurrencyProject.db";
+    protected String BASE_URL = "jdbc:sqlite:G:/CurrencyExchanger/CurrencyProject.db";
     @Override
     public void init() throws ServletException {
         super.init();
