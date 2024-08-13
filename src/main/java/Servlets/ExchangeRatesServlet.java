@@ -21,14 +21,11 @@ import java.sql.Statement;
 public class ExchangeRatesServlet extends BaseServlet{
     private ExchangeRatesService service = new ExchangeRatesService();
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
+        PrintWriter out = prepareResponse(response);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(BASE_URL);
-            Statement statement = connection.createStatement();
-            JsonArray answer = service.ProccesGetExchangeRates(statement);
+            JsonArray answer = service.ProccesGetExchangeRates(connection);
             out.println(answer.toString());
             if(answer.toString().contains("error"))
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -40,9 +37,7 @@ public class ExchangeRatesServlet extends BaseServlet{
         }
     }
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
+        PrintWriter out = prepareResponse(response);
         Connection connection = null;
         int BaseCurrencyId = Integer.parseInt(request.getParameter("BaseCurrencyId"));
         int TargetCurrencyId = Integer.parseInt(request.getParameter("TargetCurrency"));
@@ -56,8 +51,7 @@ public class ExchangeRatesServlet extends BaseServlet{
         }
         try {
             connection = DriverManager.getConnection(BASE_URL);
-            Statement statement = connection.createStatement();
-            out.println(service.ProccesPostExchangeRates(statement, BaseCurrencyId, TargetCurrencyId, Rate));
+            out.println(service.ProccesPostExchangeRates(connection, BaseCurrencyId, TargetCurrencyId, Rate));
             response.setStatus(HttpServletResponse.SC_CREATED);
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

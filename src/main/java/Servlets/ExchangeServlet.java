@@ -19,9 +19,7 @@ import java.sql.Statement;
 public class ExchangeServlet extends BaseServlet {
     private ExchangeService service = new ExchangeService();
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = prepareResponse(response);
         String from = request.getParameter("from");
         String to = request.getParameter("to");
         String amount = request.getParameter("amount");

@@ -1,13 +1,15 @@
 package DTO;
 
+import java.math.BigDecimal;
+
 public class ExchangeAmount extends DataTransferObject{
     private int BaseCurrencyId;
     private int TargetCurrencyId;
-    private double ExchangeRate;
-    private double ConvertedAmount;
+    private BigDecimal ExchangeRate;
+    private BigDecimal ConvertedAmount;
     private int amount;
 
-    public ExchangeAmount(int baseCurrencyId, int targetCurrencyId, double exchangeRate, double convertedAmount, int amount) {
+    public ExchangeAmount(int baseCurrencyId, int targetCurrencyId, BigDecimal exchangeRate, BigDecimal convertedAmount, int amount) {
         BaseCurrencyId = baseCurrencyId;
         TargetCurrencyId = targetCurrencyId;
         ExchangeRate = exchangeRate;
@@ -44,19 +46,19 @@ public class ExchangeAmount extends DataTransferObject{
         TargetCurrencyId = targetCurrencyId;
     }
 
-    public double getExchangeRate() {
+    public BigDecimal getExchangeRate() {
         return ExchangeRate;
     }
 
-    public void setExchangeRate(double exchangeRate) {
+    public void setExchangeRate(BigDecimal exchangeRate) {
         ExchangeRate = exchangeRate;
     }
 
-    public double getConvertedAmount() {
+    public BigDecimal getConvertedAmount() {
         return ConvertedAmount;
     }
 
-    public void setConvertedAmount(double convertedAmount) {
+    public void setConvertedAmount(BigDecimal convertedAmount) {
         ConvertedAmount = convertedAmount;
     }
 

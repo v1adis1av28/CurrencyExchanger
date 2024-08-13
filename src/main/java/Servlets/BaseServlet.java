@@ -27,4 +27,10 @@ public class BaseServlet extends HttpServlet {
     public void destroy() {
         super.destroy();
     }
+
+    protected PrintWriter prepareResponse(HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        return response.getWriter();
+    }
 }

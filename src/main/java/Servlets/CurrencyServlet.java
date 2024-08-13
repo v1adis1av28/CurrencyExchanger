@@ -20,23 +20,19 @@ public class CurrencyServlet extends BaseServlet {
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-        PrintWriter out = resp.getWriter();
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = prepareResponse(resp);
         String pathInfo = req.getPathInfo();
         if(!req.getRequestURI().contains("/currency/"))//Обрабатываем случай,неправильно набран запрос
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         pathInfo = pathInfo.substring(pathInfo.length()-3);//Выделяем информацию о запросе конкретной валюты
         try {
             Connection con = DriverManager.getConnection(BASE_URL);
-            Statement stmt = con.createStatement();
-            //Передаем в ф-ю сервиса pathInfo+stmnt
-            String json = currencyService.FindCurrency(stmt,pathInfo);
+            String json = currencyService.FindCurrency(con,pathInfo);
             resp.setStatus(HttpServletResponse.SC_OK);
             out.println(json);
             out.close();
-
         } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw new RuntimeException(e);
         }
 

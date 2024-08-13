@@ -1,6 +1,8 @@
 package Servlets;
 
+import DTO.Error;
 import Services.CurrenciesService;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,14 +21,11 @@ public class CurrenciesServlet extends BaseServlet {
     //Метод Который получает GET запрос на получение всех валют из базы данных
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
+        PrintWriter out = prepareResponse(response);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(BASE_URL);
-            Statement statement = connection.createStatement();
-            JsonArray jsonArray = service.ProccessGetCurrenciesRequest(statement);
+            JsonArray jsonArray = service.ProccessGetCurrenciesRequest(connection);
             out.println(jsonArray);
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (SQLException e) {
@@ -37,23 +36,19 @@ public class CurrenciesServlet extends BaseServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
+        PrintWriter out = prepareResponse(response);
         String name = request.getParameter("name");
         String code = request.getParameter("code");
         String sign = request.getParameter("sign");
 
         if (name == null || code == null || sign == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"error\": \"Missing parameters\"}");
+            out.print(new Gson().toJson(new Error("missing parametr")));
             return;
         }
-
         try {
             Connection connection = DriverManager.getConnection(BASE_URL);
-            Statement statement = connection.createStatement();
-            String gson = service.ProcessPostCurrenciesRequest(statement, name, code, sign);
+            String gson = service.ProcessPostCurrenciesRequest(connection, name, code, sign);
             if(!gson.contains("error"))
                 response.setStatus(HttpServletResponse.SC_CREATED);
             else
@@ -66,24 +61,3 @@ public class CurrenciesServlet extends BaseServlet {
         }
     }
 }
-//
-//GET /currencies #
-//Получение списка валют. Пример ответа:
-//        [
-//        {
-//        "id": 0,
-//        "name": "United States dollar",
-//        "code": "USD",
-//        "sign": "$"
-//        },
-//        {
-//        "id": 0,
-//        "name": "Euro",
-//        "code": "EUR",
-//        "sign": "€"
-//        }
-//        ]
-//HTTP коды ответов:
-//
-//Успех - 200
-//Ошибка (например, база данных недоступна) - 500

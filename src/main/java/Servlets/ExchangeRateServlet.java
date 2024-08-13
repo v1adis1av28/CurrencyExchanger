@@ -21,10 +21,9 @@ import java.sql.Statement;
 public class ExchangeRateServlet extends BaseServlet {
     private ExchangeRateService service = new ExchangeRateService();
     private int MAX_REQUEST_INFO_LENGTH = 6;
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = prepareResponse(response);
 
         if (!isRequestValid(request)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -32,9 +31,8 @@ public class ExchangeRateServlet extends BaseServlet {
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection(BASE_URL);
-             Statement stmt = conn.createStatement()) {
-            String answer = service.ProccesGetExchangeRate(stmt, request.getPathInfo().substring(1));
+        try (Connection conn = DriverManager.getConnection(BASE_URL)) {
+            String answer = service.ProccesGetExchangeRate(conn, request.getPathInfo().substring(1));
             if (!answer.contains("error")) {
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
@@ -49,8 +47,7 @@ public class ExchangeRateServlet extends BaseServlet {
         }
     }
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = prepareResponse(response);
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
             String line;
@@ -70,11 +67,9 @@ public class ExchangeRateServlet extends BaseServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        PrintWriter out = response.getWriter();
-        try (Connection connection = DriverManager.getConnection(BASE_URL);
-             Statement statement = connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(BASE_URL);) {
             double newRate = Double.parseDouble(rate);
-            String newRateValue = service.ProccesPatchExchangeRate(statement, newRate, request.getPathInfo().substring(1));
+            String newRateValue = service.ProccesPatchExchangeRate(connection, newRate, request.getPathInfo().substring(1));
             if (!newRateValue.contains("error")) {
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
