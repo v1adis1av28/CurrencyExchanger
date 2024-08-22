@@ -45,11 +45,11 @@ public class utils {
             return 1;
     }
 
-    public static boolean CheckId(Connection connection, int id) throws SQLException {
-        String sql = "select * from Currencies where ID=?;";
+    public static boolean CheckId(Connection connection, String id) throws SQLException {
+        String sql = "select * from Currencies where Code=?;";
         try {
             PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setInt(1, id);
+            ps.setString(1, id);
             ResultSet resultSet = ps.executeQuery();
             if (resultSet.next()) {
                 return true;
@@ -60,21 +60,32 @@ public class utils {
         }
     }
 
-    public static boolean CheckPair(Connection con, int baseId, int targetId) throws SQLException {
-        String sql = "select * from ExchangeRates WHERE BaseCurrencyId=? AND TargetCurrency=?;";
-        try {
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setInt(1, baseId);
-            ps.setInt(2, targetId);
-            ResultSet resultSet = ps.executeQuery();
-            if (resultSet.next()) {
-                return true;
+    public static boolean CheckPair(Connection con, String baseId, String targetId) throws SQLException {
+        // Исправленный SQL-запрос
+        String sql = "SELECT 1 FROM ExchangeRates er " +
+                "JOIN Currencies c1 ON er.BaseCurrencyId = c1.ID " +
+                "JOIN Currencies c2 ON er.TargetCurrency = c2.ID " +
+                "WHERE c1.Code = ? AND c2.Code = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, baseId);  // Значение для первого параметра
+            ps.setString(2, targetId); // Значение для второго параметра
+
+            try (ResultSet resultSet = ps.executeQuery()) {
+                // Если результат содержит хотя бы одну строку, возвращаем true
+                return resultSet.next();
             }
-            return false;
-        }
-        catch (SQLException e) {
-            throw new SQLException(e.getMessage());
+        } catch (SQLException e) {
+            throw new SQLException(e.getMessage(), e);
         }
     }
 
+    public static int findIdByCode(Connection connection, String code) throws SQLException {
+        String sql = "SELECT ID FROM Currencies WHERE Code = ?;";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, code);
+        ResultSet resultSet = ps.executeQuery();
+        return resultSet.next() ? resultSet.getInt(1) : -1;
+    }
 }
+

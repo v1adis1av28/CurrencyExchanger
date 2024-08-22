@@ -24,7 +24,7 @@ public class ExchangeRatesService extends ServiceEntity{
         return array;
     }
 
-    public String ProccesPostExchangeRates(Connection connection, int BaseId, int TargetId, double Rate) throws SQLException {
+    public String ProccesPostExchangeRates(Connection connection, String BaseId, String TargetId, double Rate) throws SQLException {
         //Сперва будем передавать и проверять наличие каждой id, чтобы если что сразу выкидывать 409(Отсуствует валютная пара)
         //После проверка наличия в базе данных пары (BaseId-TargetId) если нет выкидываем(404)
         //В остальном просто возвращаем json файл или дропаем по 500 ошибке
@@ -33,7 +33,7 @@ public class ExchangeRatesService extends ServiceEntity{
         if(CheckPair(connection,BaseId,TargetId))//Если валюта возвращает True-> значит пара есть и возвращаем ошибку
             return new Gson().toJson(new Error("409"));
         int ID = FindMaxId(connection)+1;
-        ExchangeRate exchangeRate = new ExchangeRate(ID,BaseId,TargetId,Rate);
+        ExchangeRate exchangeRate = new ExchangeRate(ID,findIdByCode(connection,BaseId),findIdByCode(connection,TargetId),Rate);
         ExchangeRatesDAO.InsertExchangeRate(connection,exchangeRate);
         return new Gson().toJson(exchangeRate);
     }

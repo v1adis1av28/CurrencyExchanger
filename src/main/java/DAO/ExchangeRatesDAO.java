@@ -16,32 +16,34 @@ public class ExchangeRatesDAO {
 
     public static List<ExchangeRate> getExchangeRates(Connection con) throws SQLException {
         List<ExchangeRate> exchangeRates = new ArrayList<>();
-        String sql = "select * from ExchangeRates";
-        try {
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet resultSet = ps.executeQuery();
+        String sql = "SELECT er.ID, er.BaseCurrencyId, er.TargetCurrency, er.Rate, bc.Code AS BaseCurrencyCode, tc.Code AS TargetCurrencyCode " +
+                "FROM ExchangeRates er " +
+                "JOIN Currencies bc ON er.BaseCurrencyId = bc.ID " +
+                "JOIN Currencies tc ON er.TargetCurrency = tc.ID";
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet resultSet = ps.executeQuery()) {
+
             while (resultSet.next()) {
-                DTO.ExchangeRate er = new DTO.ExchangeRate();
+                ExchangeRate er = new ExchangeRate();
                 er.setID(resultSet.getInt("ID"));
+                er.setRate(resultSet.getDouble("Rate"));
                 er.setBaseCurrencyId(resultSet.getInt("BaseCurrencyId"));
                 er.setTargetCurrencyId(resultSet.getInt("TargetCurrency"));
-                er.setRate(resultSet.getDouble("Rate"));
+                er.setBaseCurrencyCode(resultSet.getString("BaseCurrencyCode"));
+                er.setTargetCurrencyCode(resultSet.getString("TargetCurrencyCode"));
                 exchangeRates.add(er);
             }
-            return exchangeRates;
         }
-        catch (SQLException e) {
-            throw new SQLException(e);
-        }
+        return exchangeRates;
     }
 
     public static void InsertExchangeRate(Connection con, ExchangeRate exchangeRate) throws SQLException {
-        String sql = "Insert into ExchangeRates(ID,BaseCurrencyId,TargetCurrency,Rate) values(?,?,?,?);";
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setInt(1, exchangeRate.getID());
-        ps.setInt(2, exchangeRate.getBaseCurrencyId());
-        ps.setInt(3, exchangeRate.getTargetCurrencyId());
-        ps.setDouble(4, exchangeRate.getRate());
-        ps.executeUpdate();
+        String sql = "INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrency, Rate) VALUES(?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, exchangeRate.getBaseCurrencyId());
+            ps.setInt(2, exchangeRate.getTargetCurrencyId());
+            ps.setDouble(3, exchangeRate.getRate());
+            ps.executeUpdate();
+        }
     }
 }
