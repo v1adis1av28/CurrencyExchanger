@@ -199,8 +199,14 @@ $(document).ready(function() {
             type: "GET",
             // data: "$("#add-exchange-rate").serialize()",
             success: function(data) {
-                $("#convert-converted-amount").val(data.convertedAmount);
+                console.log(data);  // Log the entire response
+                console.log(data.ConvertedAmount);  // Check if this is the correct property name
+
+                const convertedAmountInput = $("#convert-converted-amount");
+                console.log(convertedAmountInput); // Log the element to ensure it's selected
+                convertedAmountInput.val(data.ConvertedAmount);
             },
+
             error: function(jqXHR, textStatus, errorThrown) {
                 const error = JSON.parse(jqXHR.responseText);
                 const toast = $('#api-error-toast');
