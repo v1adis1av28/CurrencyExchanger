@@ -13,16 +13,24 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 public class BaseServlet extends HttpServlet {
-    protected String BASE_URL = "jdbc:sqlite:G:/CurrencyExchanger/CurrencyProject.db";
+    protected String BASE_URL;
     @Override
     public void init() throws ServletException {
         super.init();
         try {
             Class.forName("org.sqlite.JDBC");
+
+            // Получаем реальный путь до файла базы данных в папке ресурсов
+            String relativePath = getServletContext().getRealPath("/WEB-INF/classes/CurrencyProject.db");
+
+            System.out.println(relativePath);  // Для проверки пути
+            BASE_URL = "jdbc:sqlite:" + relativePath;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
+
+
     @Override
     public void destroy() {
         super.destroy();
