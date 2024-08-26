@@ -37,13 +37,22 @@ public class ExchangeRatesDAO {
         return exchangeRates;
     }
 
+
     public static void InsertExchangeRate(Connection con, ExchangeRate exchangeRate) throws SQLException {
         String sql = "INSERT INTO ExchangeRates(BaseCurrencyId, TargetCurrency, Rate) VALUES(?, ?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, exchangeRate.getBaseCurrencyId());
             ps.setInt(2, exchangeRate.getTargetCurrencyId());
             ps.setDouble(3, exchangeRate.getRate());
             ps.executeUpdate();
+
+            // Получаем сгенерированный ID и сохраняем его в объекте
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    exchangeRate.setID(generatedKeys.getInt(1));
+                }
+            }
         }
     }
+
 }

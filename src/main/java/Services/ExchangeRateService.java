@@ -3,6 +3,7 @@ package Services;
 import DAO.ExchangeRateDAO;
 import DTO.Error;
 import DTO.ExchangeRate;
+import Exceptions.DAOException;
 import com.google.gson.Gson;
 
 import java.sql.Connection;
@@ -16,16 +17,25 @@ public class ExchangeRateService extends ServiceEntity {
     public ExchangeRateService() {
     }
 
-    public String ProccesGetExchangeRate(Connection connection, String requestInfo) throws SQLException {
-        String firstCode = requestInfo.substring(0, 3);
-        String secondCode = requestInfo.substring(3, requestInfo.length());
-        //Сделать проверку на наличие кодов в базе данных, если нет их ->404
-        if (!isCodeValid(connection, firstCode) || !isCodeValid(connection, secondCode)) {
-            return new Gson().toJson(new Error("404"));
+    public String ProccesGetExchangeRate(Connection connection, String requestInfo) {
+        try {
+            String firstCode = requestInfo.substring(0, 3);
+            String secondCode = requestInfo.substring(3);
+            if (!isCodeValid(connection, firstCode) || !isCodeValid(connection, secondCode)) {
+                return new Gson().toJson(new Error("404"));
+            }
+            ExchangeRate exchangeRate = ExchangeRateDAO.getExchangeRate(connection, firstCode, secondCode);
+            if (exchangeRate == null) {
+                return new Gson().toJson(new Error("404"));
+            }
+            return new Gson().toJson(exchangeRate);
+        } catch (DAOException e) {
+            return new Gson().toJson(new Error("500"));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        ExchangeRate exchangeRate = ExchangeRateDAO.getExchangeRate(connection, firstCode, secondCode);
-        return new Gson().toJson(exchangeRate);
     }
+
 
     public String ProccesPatchExchangeRate(Connection connection, double newRate, String requestInfo) throws SQLException {
         String firstCode = requestInfo.substring(0, 3);

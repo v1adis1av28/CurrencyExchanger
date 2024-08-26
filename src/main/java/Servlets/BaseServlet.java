@@ -23,12 +23,13 @@ public class BaseServlet extends HttpServlet {
             // Получаем реальный путь до файла базы данных в папке ресурсов
             String relativePath = getServletContext().getRealPath("/WEB-INF/classes/CurrencyProject.db");
 
-            System.out.println(relativePath);  // Для проверки пути
+            System.out.println("Database path: " + relativePath);  // Для проверки пути
             BASE_URL = "jdbc:sqlite:" + relativePath;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
+
 
 
     @Override

@@ -1,9 +1,8 @@
 package DAO;
 
+import Exceptions.CurrencyNotFoundException;
+import Exceptions.ExchangeRateNotFoundException;
 import DTO.ExchangeAmount;
-import DTO.ExchangeRate;
-import com.google.gson.Gson;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,46 +14,50 @@ public class ExchangeDAO {
         ExchangeAmount exchange = new ExchangeAmount();
         exchange.setBaseCurrencyId(baseId);
         exchange.setTargetCurrencyId(targetId);
-        exchange.setExchangeRate(new BigDecimal(exchangeRate).setScale(2,BigDecimal.ROUND_HALF_EVEN));
-        exchange.setAmount((int)amount);
-        exchange.setConvertedAmount(new BigDecimal(convertedAmount).setScale(2,BigDecimal.ROUND_HALF_EVEN));
+        exchange.setExchangeRate(new BigDecimal(exchangeRate).setScale(2, BigDecimal.ROUND_HALF_EVEN));
+        exchange.setAmount((int) amount);
+        exchange.setConvertedAmount(new BigDecimal(convertedAmount).setScale(2, BigDecimal.ROUND_HALF_EVEN));
         return exchange;
     }
 
-    public static double haveExchangeRate(Connection connection, int baseId, int targetId) {
-        String query = "Select rate from ExchangeRates where BaseCurrencyId = ? and TargetCurrency = ?";
-        try {
-            PreparedStatement statement = connection.prepareStatement(query);
+    public static double haveExchangeRate(Connection connection, int baseId, int targetId) throws SQLException, ExchangeRateNotFoundException {
+        String query = "SELECT rate FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrency = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, baseId);
-            statement.setInt(2,targetId);
-            ResultSet resultSet = statement.executeQuery();
-            if(resultSet.next()) {
-                return resultSet.getDouble("rate");
+            statement.setInt(2, targetId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getDouble("rate");
+                }
+                throw new ExchangeRateNotFoundException("Exchange rate not found for BaseId: " + baseId + " and TargetId: " + targetId);
             }
-            return -1;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public static int FindId(Connection con, String Currency) throws SQLException {
+    public static int FindId(Connection con, String Currency) throws SQLException, CurrencyNotFoundException {
         String query = "SELECT id FROM Currencies WHERE Code = ?";
         try (PreparedStatement pstmt = con.prepareStatement(query)) {
             pstmt.setString(1, Currency);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+                throw new CurrencyNotFoundException("Currency not found: " + Currency);
             }
         }
-        throw new SQLException("Валюта не найдена: " + Currency);
     }
 
-    public static double getRate(Connection connection, int baseId, int targetId) throws SQLException {
+    public static double getRate(Connection connection, int baseId, int targetId) throws SQLException, ExchangeRateNotFoundException {
         String query = "SELECT Rate FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrency = ?";
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setInt(1, baseId);
-        preparedStatement.setInt(2,targetId);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        return resultSet.getDouble("Rate");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, baseId);
+            preparedStatement.setInt(2, targetId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getDouble("Rate");
+                }
+                throw new ExchangeRateNotFoundException("Exchange rate not found for BaseId: " + baseId + " and TargetId: " + targetId);
+            }
+        }
     }
 }

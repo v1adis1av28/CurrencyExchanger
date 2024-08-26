@@ -1,6 +1,8 @@
 package Servlets;
 
+import Exceptions.CurrencyNotFoundException;
 import Services.CurrencyService;
+import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,24 +20,33 @@ public class CurrencyServlet extends BaseServlet {
 
     private CurrencyService currencyService = new CurrencyService();
 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-    {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter out = prepareResponse(resp);
         String pathInfo = req.getPathInfo();
-        if(!req.getRequestURI().contains("/currency/"))//Обрабатываем случай,неправильно набран запрос
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        pathInfo = pathInfo.substring(pathInfo.length()-3);//Выделяем информацию о запросе конкретной валюты
-        try {
-            Connection con = DriverManager.getConnection(BASE_URL);
-            String json = currencyService.FindCurrency(con,pathInfo);
-            resp.setStatus(HttpServletResponse.SC_OK);
-            out.println(json);
-            out.close();
-        } catch (SQLException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new RuntimeException(e);
+
+        if (pathInfo == null || !pathInfo.matches("/[A-Z]{3}")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.println(new Gson().toJson(new Error("Invalid currency code format")));
+            return;
         }
 
+        String code = pathInfo.substring(1); // Извлечение кода валюты из URL
+
+        try (Connection con = DriverManager.getConnection(BASE_URL)) {
+            String json = currencyService.FindCurrency(con, code);
+            resp.setStatus(HttpServletResponse.SC_OK);
+            out.println(json);
+        } catch (CurrencyNotFoundException e) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            out.println(new Gson().toJson(new Error("Currency not found")));
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.println(new Gson().toJson(new Error("Database error")));
+        } finally {
+            out.close();
+        }
     }
+
 
 }

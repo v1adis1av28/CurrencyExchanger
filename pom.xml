@@ -68,5 +68,13 @@
                 <version>3.4.0</version>
             </plugin>
         </plugins>
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                    <includes>
+                        <include>CurrencyProject.db</include>
+                    </includes>
+                </resource>
+            </resources>
     </build>
 </project>

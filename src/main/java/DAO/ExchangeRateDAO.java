@@ -2,6 +2,7 @@ package DAO;
 
 import DTO.Error;
 import DTO.ExchangeRate;
+import Exceptions.DAOException;
 import com.google.gson.Gson;
 
 import java.sql.Connection;
@@ -11,25 +12,22 @@ import java.sql.SQLException;
 
 public class ExchangeRateDAO {
 
-    public static ExchangeRate getExchangeRate(Connection con, String firstCode, String secondCode) throws SQLException {
+    public static ExchangeRate getExchangeRate(Connection con, String firstCode, String secondCode) throws SQLException, DAOException {
         ExchangeRate exchangeRate = new ExchangeRate();
         String SQL = "SELECT  ID, BaseCurrencyId, TargetCurrency, Rate  FROM  ExchangeRates WHERE BaseCurrencyId = (select ID from currencies where Code = ?) AND TargetCurrency = (select ID from currencies where Code = ?);";
-        try {
-            PreparedStatement ps = con.prepareStatement(SQL);
+        try (PreparedStatement ps = con.prepareStatement(SQL)) {
             ps.setString(1, firstCode);
             ps.setString(2, secondCode);
-            ResultSet rs = ps.executeQuery();
-            if(rs.next())
-            {
-                exchangeRate.setBaseCurrencyId(rs.getInt("BaseCurrencyId"));
-                exchangeRate.setTargetCurrencyId(rs.getInt("TargetCurrency"));
-                exchangeRate.setRate(rs.getDouble("Rate"));
-                exchangeRate.setID(rs.getInt("ID"));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new ExchangeRate(rs.getInt("ID"), rs.getInt("BaseCurrencyId"), rs.getInt("TargetCurrency"), rs.getDouble("Rate"));
+                } else {
+                    return null;
+                }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DAOException("Error fetching exchange rate", e);
         }
-        return exchangeRate;
     }
 
     public static ExchangeRate patchExchangeRate(Connection con,double newRate, String firstCode, String secondCode) throws SQLException {

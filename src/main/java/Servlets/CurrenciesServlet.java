@@ -1,6 +1,9 @@
 package Servlets;
 
 import DTO.Error;
+import Exceptions.CurrencyNotFoundException;
+import Exceptions.DatabaseException;
+import Exceptions.NotUniqueObjectException;
 import Services.CurrenciesService;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -28,11 +31,18 @@ public class CurrenciesServlet extends BaseServlet {
             JsonArray jsonArray = service.ProccessGetCurrenciesRequest(connection);
             out.println(jsonArray);
             response.setStatus(HttpServletResponse.SC_OK);
+        } catch (CurrencyNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            out.print(new Gson().toJson(new Error("Currencies not found")));
+        } catch (DatabaseException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print(new Gson().toJson(new Error("Database error")));
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new RuntimeException(e);
+            out.print(new Gson().toJson(new Error("Database connection error")));
         }
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -55,9 +65,12 @@ public class CurrenciesServlet extends BaseServlet {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.println(gson);
             out.flush();
-        } catch (SQLException e) {
+        }
+        catch (NotUniqueObjectException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

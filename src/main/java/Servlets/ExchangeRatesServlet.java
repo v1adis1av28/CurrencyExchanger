@@ -1,6 +1,9 @@
 package Servlets;
 
 import DTO.Error;
+import Exceptions.CurrencyNotFoundException;
+import Exceptions.CurrencyPairExistsException;
+import Exceptions.NotUniqueObjectException;
 import Services.ExchangeRatesService;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -45,20 +48,16 @@ public class ExchangeRatesServlet extends BaseServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         PrintWriter out = prepareResponse(response);
-
         Connection connection = null;
 
-        // Парсинг данных из запроса
         try {
             PostData postData = parsePostData(request);
 
-            // Проверка на наличие параметров
             if (postData == null || postData.baseCurrencyCode.length() <= 0 || postData.targetCurrencyCode.length() <= 0 || postData.rate <= 0) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.println(new Gson().toJson(new Error("400")));
                 return;
             }
-
             connection = DriverManager.getConnection(BASE_URL);
             String result = service.ProccesPostExchangeRates(connection, postData.baseCurrencyCode, postData.targetCurrencyCode, postData.rate);
             out.println(result);
@@ -70,6 +69,14 @@ public class ExchangeRatesServlet extends BaseServlet {
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.println(new Gson().toJson(new Error("400")));
+            e.printStackTrace();
+        } catch (CurrencyNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            out.println(new Gson().toJson(new Error("404")));
+            e.printStackTrace();
+        } catch (CurrencyPairExistsException e) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            out.println(new Gson().toJson(new Error("409")));
             e.printStackTrace();
         } finally {
             if (connection != null) {
@@ -88,10 +95,8 @@ public class ExchangeRatesServlet extends BaseServlet {
         String targetCurrencyIdParam = request.getParameter("targetCurrencyCode");
         String rateParam = request.getParameter("rate");
 
-        // Если параметры не найдены, проверяем тело запроса
         if (baseCurrencyIdParam == null || targetCurrencyIdParam == null || rateParam == null ||
                 baseCurrencyIdParam.isEmpty() || targetCurrencyIdParam.isEmpty() || rateParam.isEmpty()) {
-
             BufferedReader reader = request.getReader();
             StringBuilder sb = new StringBuilder();
             String line;
@@ -99,8 +104,6 @@ public class ExchangeRatesServlet extends BaseServlet {
                 sb.append(line);
             }
             String body = sb.toString();
-
-            // Разделяем тело запроса на параметры
             String[] params = body.split("&");
             for (String param : params) {
                 String[] keyValue = param.split("=");
@@ -121,7 +124,6 @@ public class ExchangeRatesServlet extends BaseServlet {
         }
         try {
             double rate = Double.parseDouble(rateParam);
-
             return new PostData(baseCurrencyIdParam, targetCurrencyIdParam, rate);
         } catch (NumberFormatException e) {
             return null;

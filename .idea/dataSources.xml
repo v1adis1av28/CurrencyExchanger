@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="CurrencyProject.db" uuid="0b6f3c6f-c51e-4649-be61-9a56ab7ea9c0">
+    <data-source source="LOCAL" name="CurrencyProject.db" uuid="d80ee291-b5b3-4bf0-93bd-61261e4f29b7">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/../../../../CurrencyExchanger/CurrencyProject.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/IdeaProjects/ExchangeCurrency/src/main/resources/CurrencyProject.db</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
       </jdbc-additional-properties>

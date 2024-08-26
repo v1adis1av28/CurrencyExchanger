@@ -1,6 +1,7 @@
 package Servlets;
 
 import DTO.Error;
+import Exceptions.DAOException;
 import Services.ExchangeRateService;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
@@ -31,29 +32,30 @@ public class ExchangeRateServlet extends BaseServlet {
         }
 
         try (Connection conn = DriverManager.getConnection(BASE_URL)) {
-            String answer = service.ProccesGetExchangeRate(conn, request.getPathInfo().substring(1));
-            if (!answer.contains("error")) {
-                response.setStatus(HttpServletResponse.SC_OK);
-            } else {
+            String result = service.ProccesGetExchangeRate(conn, request.getPathInfo().substring(1));
+            if (result.contains("404")) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            } else if (result.contains("500")) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            } else {
+                response.setStatus(HttpServletResponse.SC_OK);
             }
-            out.println(answer);
-            out.flush();
+            out.println(result);
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.println(new Gson().toJson(new Error("500")));
+        } finally {
             out.flush();
         }
     }
+
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        // Попытка получить параметр rate из x-www-form-urlencoded данных стандартным методом
         String rate = request.getParameter("rate");
 
-        // Если стандартный способ не сработал, выполняем ручной разбор тела запроса
         if (rate == null || rate.isEmpty()) {
             BufferedReader reader = request.getReader();
             StringBuilder sb = new StringBuilder();
@@ -72,21 +74,16 @@ public class ExchangeRateServlet extends BaseServlet {
             }
         }
 
-        // Проверка, был ли найден параметр rate
         if (rate == null || rate.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.println(new Gson().toJson(new Error("400")));
             out.flush();
             return;
         }
-
         try (Connection connection = DriverManager.getConnection(BASE_URL)) {
             double newRate = Double.parseDouble(rate);
-
-            // Обновление курса в базе данных
             String currencyPair = request.getPathInfo().substring(1);
             String updatedRate = service.ProccesPatchExchangeRate(connection, newRate, currencyPair);
-
             if (!updatedRate.contains("error")) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 out.println(updatedRate);
@@ -107,10 +104,13 @@ public class ExchangeRateServlet extends BaseServlet {
     }
 
     private boolean isRequestValid(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        String requestInfo = request.getPathInfo().substring(1);
-        return requestURI.contains("/exchangeRate") && requestInfo.length() == MAX_REQUEST_INFO_LENGTH;
+        String requestInfo = request.getPathInfo();
+        if (requestInfo == null || requestInfo.length()-1 != MAX_REQUEST_INFO_LENGTH) {
+            return false;
+        }
+        return requestInfo.substring(1).matches("[A-Z]{6}");
     }
+
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
