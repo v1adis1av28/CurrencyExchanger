@@ -19,7 +19,7 @@ public class ExchangeService extends ServiceEntity {
     // -Если нет, прямого проверяем наличие -> Тенге в рубли -> если есть получаем рейт и отсчитываем кол-во для обмена деленное на обратный курс
     // -Если нет ни прямого, ни обратного -> Переводим рубль и тенге в доллар-> значение тенге(usd)/значение рубль(usd) за одну единицу ->получаем rate
 
-    public String ProccesExchange(Connection connection, String baseCurrency, String targetCurrency, String amount) throws SQLException, InvalidAmountException {
+    public String ProccesExchange(Connection connection, String baseCurrency, String targetCurrency, String amount) throws SQLException, InvalidAmountException, ExchangeRateNotFoundException {
         double exchangeRate;
         double Amount;
         try {
@@ -40,11 +40,11 @@ public class ExchangeService extends ServiceEntity {
                 double usdToTargetRate = ExchangeDAO.getRate(connection, usdId, targetId);
                 exchangeRate = usdToBaseRate / usdToTargetRate;
             }
-            exchangeRate = Math.round(exchangeRate * 100.0) / 100.0;
+            //exchangeRate = Math.round(exchangeRate * 100.0) / 100.0;
             double converted = Math.round(exchangeRate * Amount * 100.0) / 100.0;
             ExchangeAmount ea = ExchangeDAO.createExchangeRate(baseId, targetId, exchangeRate, Amount, converted);
             return new Gson().toJson(ea);
-        } catch (CurrencyNotFoundException | ExchangeRateNotFoundException e) {
+        } catch (CurrencyNotFoundException e) {
             return new Gson().toJson(new Error("404"));
         }
     }

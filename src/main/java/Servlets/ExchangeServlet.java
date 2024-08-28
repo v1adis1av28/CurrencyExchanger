@@ -45,6 +45,8 @@ public class ExchangeServlet extends BaseServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             out.println(new Gson().toJson(new Error("404")));
             e.printStackTrace();
+        } catch (ExchangeRateNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 }

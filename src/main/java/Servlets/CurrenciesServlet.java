@@ -3,6 +3,7 @@ package Servlets;
 import DTO.Error;
 import Exceptions.CurrencyNotFoundException;
 import Exceptions.DatabaseException;
+import Exceptions.InvalidInputException;
 import Exceptions.NotUniqueObjectException;
 import Services.CurrenciesService;
 import com.google.gson.Gson;
@@ -70,6 +71,8 @@ public class CurrenciesServlet extends BaseServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidInputException e) {
             throw new RuntimeException(e);
         }
     }

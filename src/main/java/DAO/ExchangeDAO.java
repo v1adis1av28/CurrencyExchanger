@@ -29,9 +29,9 @@ public class ExchangeDAO {
                 if (resultSet.next()) {
                     return resultSet.getDouble("rate");
                 }
-                throw new ExchangeRateNotFoundException("Exchange rate not found for BaseId: " + baseId + " and TargetId: " + targetId);
             }
         }
+        return -1;
     }
 
     public static int FindId(Connection con, String Currency) throws SQLException, CurrencyNotFoundException {
@@ -56,8 +56,8 @@ public class ExchangeDAO {
                 if (resultSet.next()) {
                     return resultSet.getDouble("Rate");
                 }
-                throw new ExchangeRateNotFoundException("Exchange rate not found for BaseId: " + baseId + " and TargetId: " + targetId);
             }
         }
+        return -1;
     }
 }

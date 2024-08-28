@@ -3,6 +3,7 @@ import DAO.CurrenciesDAO;
 import DTO.Currency;
 import Exceptions.CurrencyNotFoundException;
 import Exceptions.DatabaseException;
+import Exceptions.InvalidInputException;
 import Exceptions.NotUniqueObjectException;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -29,10 +30,14 @@ public class CurrenciesService extends ServiceEntity{
         }
     }
 
-    public String ProcessPostCurrenciesRequest(Connection connection, String name, String code, String sign) throws SQLException, NotUniqueObjectException {
+    public String ProcessPostCurrenciesRequest(Connection connection, String name, String code, String sign) throws SQLException, NotUniqueObjectException, InvalidInputException {
         if(findIdByCode(connection,code) != -1)
         {
             throw new NotUniqueObjectException("Currencies not unique");
+        }
+        if(!code.chars().allMatch(Character::isLetter) && code.length() == 3)
+        {
+            throw new InvalidInputException("Wrong input values");
         }
         Currency currency = CurrenciesDAO.AddNewCurrency(connection,name,code,sign);
         return new Gson().toJson(currency);
